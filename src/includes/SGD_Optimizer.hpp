@@ -2,7 +2,7 @@
 
 #include "Dense.hpp"
 
-struct SGDOptimizer {
+struct SGDOptimizer : Layer {
     float learning_rate;
 
     SGDOptimizer(float lr = 0.01f) : learning_rate(lr) {}

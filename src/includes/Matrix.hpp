@@ -5,10 +5,12 @@
 #include <random>
 #include <stdexcept>
 #include <iostream>
+
 struct Matrix {
-    size_t columns;
-    size_t rows;
+    size_t columns = 0;
+    size_t rows = 0;
     std::vector<float> data;
+    Matrix() : rows(0), columns(0) {}
     Matrix(size_t r, size_t c) : columns(c), rows(r), data(r * c, 0.0f) {}
 
     void zero() {
@@ -69,7 +71,6 @@ struct Matrix {
         result.zero();
 
         // I'm using the IKJ multiplication for performance
-
         for (size_t i = 0; i < this->rows; ++i) {
             for (size_t k = 0; k < this->columns; ++k) {
                 float r = (*this)(i, k);
@@ -147,5 +148,26 @@ struct Matrix {
 
         return result;
     } 
+    Matrix get_row_range(size_t start_row, size_t num_rows) const {
+        if (start_row >= this->rows) {
+            return Matrix(0, this->columns);
+        }
+        if (start_row + num_rows > this->rows) {
+            num_rows = this->rows - start_row;
+        }
+
+        Matrix result(num_rows, this->columns);
+
+        size_t start_index = start_row * this->columns;
+        size_t total_elements = num_rows * this->columns;
+
+        std::copy(
+            this->data.begin() + start_index,
+            this->data.begin() + start_index + total_elements,
+            result.data.begin()
+        );
+
+        return result;
+    }
 };
 

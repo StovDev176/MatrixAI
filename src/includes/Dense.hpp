@@ -2,9 +2,10 @@
 
 #include "Matrix.hpp"
 #include <cmath>
+#include "Sequential.hpp"
 #include <vector>
 
-struct Dense {
+struct Dense : Layer {
     Matrix weights;
     Matrix bias;  
     Matrix input_cache; 
@@ -17,33 +18,26 @@ struct Dense {
         weights.random(-0.5f, 0.5f);
         bias.zero();
     }
-
-    Matrix forward(const Matrix& input) {
+    Matrix forward(const Matrix& input) override {
         this->input_cache = input;
         Matrix output = input * weights; 
         output.add_bias(bias);
         return output;
     }
-    void relu_backward(Matrix& dOut, const Matrix& x) {
-        for (size_t i = 0; i < dOut.data.size(); ++i) {
-            if (x.data[i] <= 0.0f) {
-                dOut.data[i] = 0.0f; 
-            }
-        }
-    }
-    void sigmoid_backward(Matrix& dOut, const Matrix& a) {
-        for (size_t i = 0; i < dOut.data.size(); ++i) {
-            float sig = a.data[i];
-            float derivative = sig * (1.0f - sig);
-            dOut.data[i] *= derivative; 
-        }
-    }
-    Matrix backward(const Matrix& dOut) {
+    Matrix backward(const Matrix& dOut) override {
         this->dW = input_cache.transpose() * dOut;
         this->dB = dOut.sum_rows();
         Matrix dX = dOut * weights.transpose();
         return dX;
     }
+    void update(float learning_rate) override {
+        for (size_t i = 0; i < weights.data.size(); ++i) {
+                weights.data[i] -= learning_rate * dW.data[i];
+            }
+        for (size_t i = 0; i < bias.data.size(); ++i) {
+            bias.data[i] -= learning_rate * dB.data[i];
+        }
+    }      
 };
 
 struct MSELoss {
